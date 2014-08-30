@@ -32,6 +32,12 @@ class Note(object):
     def add_paragraph(self, newtext):
         self.text += '\n\n%s' % self._sanitize(newtext)
 
+    def text_as_blockquote(self):
+        return '\n    > ' + self.text.replace('\n', '\n    > ') + '\n'
+
+    def text_as_listitem(self):
+        return '  ' + self.text.replace('\n', '\n    ')
+
     def _get_type(self, typedesc):
         note_type = None
         if 'strike' in typedesc:
@@ -58,6 +64,7 @@ class Article(object):
         self.md_bdsk_link = self._markdown_bdsk_link()
         self.pdf_path = self._pdf_path()
         self.pdf_link = self._pdf_link()
+        self.md_pdf_link = self._markdown_pdf_link()
 
     def field(self, which):
         return bibdesk_query(which, self.cite_key)
@@ -69,7 +76,7 @@ class Article(object):
         return "x-bdsk://%s" % self.cite_key
 
     def _markdown_bdsk_link(self):
-        return "[%s](%s)" % (self.cite_key, self.bdsk_link)
+        return "[%s](%s \"Go to bibliography\")" % (self.cite_key, self.bdsk_link)
 
     def _pdf_path(self):
         papers = os.path.expanduser(PAPERS_DIR)
@@ -77,6 +84,10 @@ class Article(object):
 
     def _pdf_link(self):
         return urllib2.quote("file://%s" % self.pdf_path, safe='/:')
+
+    def _markdown_pdf_link(self):
+        return "[%s](%s \"Open file in PDF viewer\")" % (
+                self.pdf_file, self.pdf_link)
 
 
 def bibdesk_query(field, cite_key):
@@ -118,12 +129,13 @@ def write_header(fileh, article, notes):
     print('*', '\n* '.join(article.field('author').split(' and ')), file=fileh)
     print('\n### Article links', file=fileh)
     print('* Open in BibDesk:', article.md_bdsk_link, file=fileh)
-    print('* Open PDF: [%s](%s)' % (article.pdf_file, article.pdf_link), file=fileh)
+    print('* Open article:', article.md_pdf_link, file=fileh)
     print('\n### Annotation summary', file=fileh)
     for ntype in NOTE_TYPES:
         print("* %s notes:" % ntype.title(),
                 len(filter(lambda n: n.note_type == ntype, notes)),
                 file=fileh)
+    print('', file=fileh)
 
 def write_notes(fileh, notes):
     pages = sorted(list(set(n.page for n in notes)))
@@ -132,10 +144,11 @@ def write_notes(fileh, notes):
         print('## Page %d notes\n' % page, file=fileh)
         for note in page_notes:
             if note.is_reader_note:
-                print('*', note.text, '*[%s comment]*' % note.note_type, file=fileh)
+                print('*', note.text_as_listitem(), '*[%s note]*\n' % note.note_type,
+                        file=fileh)
             else:
                 print('* **%s annotation**' % note.note_type.title(), file=fileh)
-                print('\n    >%s\n' % note.text, file=fileh)
+                print(note.text_as_blockquote(), file=fileh)
         if page != pages[-1]:
             hr(fileh)
 

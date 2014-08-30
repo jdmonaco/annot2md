@@ -35,5 +35,3 @@ MD="$NOTESDIR/$STEM.md"
 
 $ANNOT2TXT "$PDF" "$TXT"
 $TXT2MD -d "$TXT"
-
-open "$MD" -a marked\ 2

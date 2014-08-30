@@ -29,6 +29,9 @@ class Note(object):
         self.is_reader_note = self.note_type in READER_NOTE_TYPES
         self.text = self._sanitize(text)
 
+    def add_paragraph(self, newtext):
+        self.text += '\n\n%s' % self._sanitize(newtext)
+
     def _get_type(self, typedesc):
         note_type = None
         if 'strike' in typedesc:
@@ -92,6 +95,7 @@ def parse_notes(path):
         lines = ''.join(fd.readlines()).split('\n\n')
 
     notes = []
+    cur_note = None
     pat = re.compile('(\d+?):([\w ]+?):(.*)')
     for line in lines:
         line = line.strip()
@@ -102,7 +106,10 @@ def parse_notes(path):
                 page = int(groups[0])
                 desc = groups[1].strip().lower()
                 text = groups[2].strip()
-                notes.append(Note(page, desc, text))
+                cur_note = Note(page, desc, text)
+                notes.append(cur_note)
+            elif cur_note:
+                cur_note.add_paragraph(line)
     return notes
 
 def write_header(fileh, article, notes):

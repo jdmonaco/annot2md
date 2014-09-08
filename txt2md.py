@@ -4,12 +4,12 @@
 txt2md.py -- Convert text annotations to a nicer markdown formatting
 """
 
-from __future__ import print_function
+
 
 import os
 import re
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import argparse
 import subprocess
 
@@ -83,7 +83,7 @@ class Article(object):
         return os.path.join(papers, self.field('year'), self.pdf_file)
 
     def _pdf_link(self):
-        return urllib2.quote("file://%s" % self.pdf_path, safe='/:')
+        return urllib.parse.quote("file://%s" % self.pdf_path, safe='/:')
 
     def _markdown_pdf_link(self):
         return "[%s](%s \"Open file in PDF viewer\")" % (
@@ -133,14 +133,14 @@ def write_header(fileh, article, notes):
     print('\n### Annotation summary', file=fileh)
     for ntype in NOTE_TYPES:
         print("* %s notes:" % ntype.title(),
-                len(filter(lambda n: n.note_type == ntype, notes)),
+                len([n for n in notes if n.note_type == ntype]),
                 file=fileh)
     print('', file=fileh)
 
 def write_notes(fileh, notes):
     pages = sorted(list(set(n.page for n in notes)))
     for page in pages:
-        page_notes = filter(lambda n: n.page == page, notes)
+        page_notes = [n for n in notes if n.page == page]
         print('## Page %d notes\n' % page, file=fileh)
         for note in page_notes:
             if note.is_reader_note:

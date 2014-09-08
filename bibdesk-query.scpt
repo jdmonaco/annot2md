@@ -19,11 +19,11 @@ on run argv
 			set thePub to get item 1 of (publications whose cite key contains citeKey)
 			tell thePub
 			
-				set theTitle to get value of field queryField
+				set theValue to get value of field queryField
 				
 			end tell --thePub				
 		end tell --theDoc
 		
-		return theTitle		
+		return theValue		
 	end tell	
 end run

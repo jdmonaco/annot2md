@@ -99,10 +99,11 @@ def bibdesk_query(field, cite_key):
     except subprocess.CalledProcessError:
         raise IOError("could not retrieve field \"%s\" for "
                 "cite key %s" % (field, cite_key))
-    return val.strip()
+    valstr = val.decode('utf-8').strip()
+    return valstr
 
 def parse_notes(path):
-    with file(path, 'r') as fd:
+    with open(path, 'r') as fd:
         lines = ''.join(fd.readlines()).split('\n\n')
 
     notes = []
@@ -124,8 +125,8 @@ def parse_notes(path):
     return notes
 
 def write_header(fileh, article, notes):
-    print("#", article.field('title'), '\n', file=fileh)
-    print("### Authors", file=fileh)
+    print('#', article.field('title'), '\n', file=fileh)
+    print('### Authors', file=fileh)
     print('*', '\n* '.join(article.field('author').split(' and ')), file=fileh)
     print('\n### Article links', file=fileh)
     print('* Open in BibDesk:', article.md_bdsk_link, file=fileh)
@@ -164,7 +165,7 @@ def main(args):
         md_file = args.output
     else:
         md_file = os.path.splitext(note_path)[0] + '.md'
-    with file(md_file, 'w') as fd:
+    with open(md_file, 'w', encoding='utf8') as fd:
         write_header(fd, article, notes)
         hr(fd)
         write_notes(fd, notes)

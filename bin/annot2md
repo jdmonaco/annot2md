@@ -4,7 +4,7 @@
 # Script to tie together annot2txt and txt2md scripts
 #
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 NOTESDIR="$HOME/Dropbox/Papers/Annotations"
 
@@ -35,3 +35,5 @@ MD="$NOTESDIR/$STEM.md"
 
 $ANNOT2TXT "$PDF" "$TXT"
 $TXT2MD -d "$TXT"
+
+exit 0

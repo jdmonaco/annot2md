@@ -4,10 +4,18 @@
 txt2md.py -- Convert text annotations to a nicer markdown formatting
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
-import urllib.parse
+
+if sys.version_info.major == 2:
+    from urllib2 import quote as urlquote
+elif sys.version_info.major == 3:
+    from urllib.parse import quote as urlquote
+
+import codecs
 import argparse
 import subprocess
 
@@ -28,13 +36,13 @@ class Note(object):
         self.text = self._sanitize(text)
 
     def add_paragraph(self, newtext):
-        self.text += '\n\n%s' % self._sanitize(newtext)
+        self.text += u'\n\n%s' % self._sanitize(newtext)
 
     def text_as_blockquote(self):
-        return '\n    > ' + self.text.replace('\n', '\n    > ') + '\n'
+        return u'\n    > ' + self.text.replace(u'\n', u'\n    > ') + u'\n'
 
     def text_as_listitem(self):
-        return '  ' + self.text.replace('\n', '\n    ')
+        return u'  ' + self.text.replace(u'\n', u'\n    ')
 
     def _get_type(self, typedesc):
         note_type = None
@@ -48,7 +56,7 @@ class Note(object):
 
     def _sanitize(self, text):
         text = text.strip()
-        text = text.replace('- ', '')
+        text = text.replace(u'- ', u'')
         return text
 
 
@@ -71,20 +79,20 @@ class Article(object):
         return self.note_file.split()[0]
 
     def _bdsk_link(self):
-        return "x-bdsk://%s" % self.cite_key
+        return u"x-bdsk://%s" % self.cite_key
 
     def _markdown_bdsk_link(self):
-        return "[%s](%s \"Go to bibliography\")" % (self.cite_key, self.bdsk_link)
+        return u"[%s](%s \"Go to bibliography\")" % (self.cite_key, self.bdsk_link)
 
     def _pdf_path(self):
         papers = os.path.expanduser(PAPERS_DIR)
         return os.path.join(papers, self.field('year'), self.pdf_file)
 
     def _pdf_link(self):
-        return urllib.parse.quote("file://%s" % self.pdf_path, safe='/:')
+        return urlquote(u"file://%s" % self.pdf_path, safe='/:')
 
     def _markdown_pdf_link(self):
-        return "[%s](%s \"Open file in PDF viewer\")" % (
+        return u"[%s](%s \"Open file in PDF viewer\")" % (
                 self.pdf_file, self.pdf_link)
 
 
@@ -101,7 +109,7 @@ def bibdesk_query(field, cite_key):
     return valstr
 
 def parse_notes(path):
-    with open(path, 'r') as fd:
+    with codecs.open(path, 'r', encoding='utf8') as fd:
         lines = ''.join(fd.readlines()).split('\n\n')
 
     notes = []
@@ -123,15 +131,15 @@ def parse_notes(path):
     return notes
 
 def write_header(fileh, article, notes):
-    print('#', article.field('title'), '\n', file=fileh)
-    print('### Authors', file=fileh)
-    print('*', '\n* '.join(article.field('author').split(' and ')), file=fileh)
-    print('\n### Article links', file=fileh)
-    print('* Open in BibDesk:', article.md_bdsk_link, file=fileh)
-    print('* Open article:', article.md_pdf_link, file=fileh)
-    print('\n### Annotation summary', file=fileh)
+    print(u'#', article.field('title'), '\n', file=fileh)
+    print(u'### Authors', file=fileh)
+    print(u'*', u'\n* '.join(article.field('author').split(' and ')), file=fileh)
+    print(u'\n### Article links', file=fileh)
+    print(u'* Open in BibDesk:', article.md_bdsk_link, file=fileh)
+    print(u'* Open article:', article.md_pdf_link, file=fileh)
+    print(u'\n### Annotation summary', file=fileh)
     for ntype in NOTE_TYPES:
-        print("* %s notes:" % ntype.title(),
+        print(u"* %s notes:" % ntype.title(),
                 len([n for n in notes if n.note_type == ntype]),
                 file=fileh)
     print('', file=fileh)
@@ -140,13 +148,13 @@ def write_notes(fileh, notes):
     pages = sorted(list(set(n.page for n in notes)))
     for page in pages:
         page_notes = [n for n in notes if n.page == page]
-        print('## Page %d notes\n' % page, file=fileh)
+        print(u'## Page %d notes\n' % page, file=fileh)
         for note in page_notes:
             if note.is_reader_note:
-                print('*', note.text_as_listitem(), '*[%s note]*\n' % note.note_type,
+                print(u'*', note.text_as_listitem(), u'*[%s note]*\n' % note.note_type,
                         file=fileh)
             else:
-                print('* **%s annotation**' % note.note_type.title(), file=fileh)
+                print(u'* **%s annotation**' % note.note_type.title(), file=fileh)
                 print(note.text_as_blockquote(), file=fileh)
         if page != pages[-1]:
             hr(fileh)
@@ -163,7 +171,7 @@ def main(args):
         md_file = args.output
     else:
         md_file = os.path.splitext(note_path)[0] + '.md'
-    with open(md_file, 'w', encoding='utf8') as fd:
+    with codecs.open(md_file, 'w', encoding='utf8') as fd:
         write_header(fd, article, notes)
         hr(fd)
         write_notes(fd, notes)

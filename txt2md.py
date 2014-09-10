@@ -182,10 +182,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-
-    wpy = subprocess.check_output(['which', 'python']).decode('utf-8')
-    print('which python =', wpy)
-
     parser = argparse.ArgumentParser(
             description="Convert notes from annot2txt to markdown format.")
     parser.add_argument("text_file", help="input text file with notes")

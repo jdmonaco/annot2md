@@ -15,6 +15,7 @@ Some notes:
 * Put `annot2md/bin` on your `$PATH`. If the `annot2md/bin/annot2md` script is directly symlinked, it won't be able to find the other scripts that it calls. Theoretically, all of the scripts could just be symlinked into your `~/bin` or whatever, but I didn't want to pollute the executable namespace.
 * Markdown output files currently go to `~/Dropbox/Papers/Annotations`, but this can be changed at the top of the `annot2md` script if you want.
 * Parsing the cite-key currently depends on the PDF file name, which I have set to `<cite-key> [<first-keyword>].pdf` for BibDesk auto-filing. So, `txt2md.Article._parse_cite_key()` should be changed to fit your filenames or you can re-autofile under my scheme. 
+* If automating with something like Hazel that spawns its own shell to run the script, make sure to include `export LANG=en_US.UTF-8` (or whichever locale is appropriate) before calling `annot2md` so that the unicode encoding is properly set. Otherwise, things will crash and burn on unicode decoding errors (took me 3 days to figure this out!).
 * No guarantees, this is working for my setup, but that's all I know for now.
 
 Todo:

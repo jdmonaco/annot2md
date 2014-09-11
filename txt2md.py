@@ -29,8 +29,10 @@ NOTE_TYPES = READER_NOTE_TYPES + QUOTE_NOTE_TYPES
 
 class Note(object):
 
-    def __init__(self, page, ntype, text):
-        self.page = page
+    def __init__(self, page, left, top, ntype, text):
+        self.page = int(page)
+        self.left = int(left)
+        self.top = int(top)
         self.note_type = self._get_type(ntype)
         self.is_reader_note = self.note_type in READER_NOTE_TYPES
         self.text = self._sanitize(text)
@@ -114,17 +116,19 @@ def parse_notes(path):
 
     notes = []
     cur_note = None
-    pat = re.compile('(\d+?):([\w ]+?):(.*)')
+    pat = re.compile('(\d+):(-?\d+):(-?\d+):([\w ]+?):(.*)')
     for line in lines:
         line = line.strip()
         if line:
             match = re.match(pat, line)
             if match:
                 groups = match.groups()
-                page = int(groups[0])
-                desc = groups[1].strip().lower()
-                text = groups[2].strip()
-                cur_note = Note(page, desc, text)
+                page = groups[0]
+                left = groups[1]
+                top = groups[2]
+                desc = groups[3].strip().lower()
+                text = groups[4].strip()
+                cur_note = Note(page, left, top, desc, text)
                 notes.append(cur_note)
             elif cur_note:
                 cur_note.add_paragraph(line)
@@ -147,12 +151,15 @@ def write_header(fileh, article, notes):
 def write_notes(fileh, notes):
     pages = sorted(list(set(n.page for n in notes)))
     for page in pages:
-        page_notes = [n for n in notes if n.page == page]
+        # sort notes first left-to-right in quarters (612 pts / 4 = 153) then
+        # by top-to-down with 8 pts tolerance
+        page_notes = sorted([n for n in notes if n.page == page],
+                key=lambda n: (n.left/153, -n.top/8))
         print(u'## Page %d notes\n' % page, file=fileh)
         for note in page_notes:
             if note.is_reader_note:
-                print(u'*', note.text_as_listitem(), u'*[%s note]*\n' % note.note_type,
-                        file=fileh)
+                print(u'*', note.text_as_listitem(),
+                      u'*[%s note]*\n' % note.note_type, file=fileh)
             else:
                 print(u'* **%s annotation**' % note.note_type.title(), file=fileh)
                 print(note.text_as_blockquote(), file=fileh)

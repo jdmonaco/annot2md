@@ -22,5 +22,5 @@ Todo:
 
 * PDF links currently only work for my path and folder structure (`~/Dropbox/Papers/<Year>/*.pdf`), so this needs to be handled better and more generally
 * Fix parsing of cite key which currently depends on particular PDF file-naming scheme.
-* Notes and highlights should be ordered by (-y, x) of top/left bounds; they seem to be nearly random right now for a given PDF page
+* ~~~Notes and highlights should be ordered by (-y, x) of top/left bounds; they seem to be nearly random right now for a given PDF page~~~
 * There should be a batch script to process a directory full of PDFs, find the ones with annotations, and then extract all notes

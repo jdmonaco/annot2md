@@ -131,7 +131,8 @@ def parse_notes(path):
     return notes
 
 def write_header(fileh, article, notes):
-    print(u'#', article.field('title'), '\n', file=fileh)
+    title = article.field('title').replace('{','').replace('}','')
+    print(u'#', title, u'\n', file=fileh)
     print(u'### Authors', file=fileh)
     print(u'*', u'\n* '.join(article.field('author').split(' and ')), file=fileh)
     print(u'\n### Article links', file=fileh)
@@ -140,9 +141,8 @@ def write_header(fileh, article, notes):
     print(u'\n### Annotation summary', file=fileh)
     for ntype in NOTE_TYPES:
         print(u"* %s notes:" % ntype.title(),
-                len([n for n in notes if n.note_type == ntype]),
-                file=fileh)
-    print('', file=fileh)
+                len([n for n in notes if n.note_type == ntype]), file=fileh)
+    print(u'', file=fileh)
 
 def write_notes(fileh, notes):
     pages = sorted(list(set(n.page for n in notes)))

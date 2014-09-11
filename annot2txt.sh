@@ -28,7 +28,6 @@ tell application "Skim"
     save document 1
 
     set the clipboard to ""
-    activate
     
     set allNotes to notes of document 1
     repeat with i from 1 to count of allNotes

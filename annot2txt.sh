@@ -30,18 +30,19 @@ tell application "Skim"
     set the clipboard to ""
     activate
     
-    set listOfNoteTypes to every type of notes of document 1
-    set listOfNoteText to text of every note of document 1
-    set listOfNotePages to index of every page of every note of document 1
-    
-    repeat with i from 1 to count of listOfNoteTypes
+    set allNotes to notes of document 1
+    repeat with i from 1 to count of allNotes
+        set theNote to item i of allNotes
         
-        set noteText to item i of listOfNoteText
-        set thePage to item i of listOfNotePages as string
-        set theType to item i of listOfNoteTypes as string
+        set noteType to type of theNote
+        set noteText to text of theNote
+        set notePage to index of page of theNote
         
-        set the clipboard to (the clipboard) & thePage & ":" & ¬
-            theType & ":" & noteText & return & return
+        set noteLeft to item 1 of (get bounds for theNote) as string
+        set noteTop to item 2 of (get bounds for theNote) as string
+        
+        set the clipboard to (the clipboard) & notePage & ":" & noteLeft & ¬
+            ":" & noteTop & ":" & noteType & ":" & noteText & return & return
         
     end repeat
     close document 1

@@ -66,6 +66,7 @@ class Note(object):
     def _sanitize(self, text):
         text = text.strip()
         text = text.replace(u'- ', u'')
+        text = re.sub('^(\w+)\.', lambda m: m.groups()[0] + '\.', text)
         return text
 
 

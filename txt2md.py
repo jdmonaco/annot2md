@@ -44,7 +44,14 @@ class Note(object):
         return u'\n    > ' + self.text.replace(u'\n', u'\n    > ') + u'\n'
 
     def text_as_listitem(self):
-        return u'  ' + self.text.replace(u'\n', u'\n    ')
+        return u'  ' + self.ellipsize().replace(u'\n', u'\n    ')
+
+    def ellipsize(self):
+        ell = ell2 = u''
+        if self.text:
+            if self.text[0].islower(): ell = u'...'
+            if self.text[-1] not in '.!?"\'': ell2 = u'...'
+        return ell + self.text + ell2
 
     def _get_type(self, typedesc):
         note_type = None
@@ -136,7 +143,8 @@ def parse_notes(path):
 
 def write_header(fileh, article, notes):
     title = article.field('title').replace('{','').replace('}','')
-    print(u'#', title, u'\n', file=fileh)
+    year = article.field('year')
+    print(u'#', title, u'(%s)\n' % year, file=fileh)
     print(u'### Authors', file=fileh)
     print(u'*', u'\n* '.join(article.field('author').split(' and ')), file=fileh)
     print(u'\n### Article links', file=fileh)
@@ -158,11 +166,13 @@ def write_notes(fileh, notes):
         print(u'## Page %d notes\n' % page, file=fileh)
         for note in page_notes:
             if note.is_reader_note:
-                print(u'*', note.text_as_listitem(),
-                      u'*[%s note]*\n' % note.note_type, file=fileh)
+                print(u'* **%s note**\n' % note.note_type.title(),
+                      note.text_as_blockquote(), file=fileh)
             else:
-                print(u'* **%s annotation**' % note.note_type.title(), file=fileh)
-                print(note.text_as_blockquote(), file=fileh)
+                type_str = u''
+                if note.note_type != 'highlight':
+                    type_str = u'*[%s]*' % note.note_type
+                print(u'*', note.text_as_listitem(), type_str, '\n', file=fileh)
         if page != pages[-1]:
             hr(fileh)
 

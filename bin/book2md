@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#
+# Variation on annot2md for non-filed PDFs such as books
+#
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+NOTESDIR="$HOME/Dropbox/Books/Annotations"
+
+ANNOT2TXT="$DIR/../annot2txt.sh"
+TXT2MD="$DIR/../txt2md.py"
+
+USAGE="Usage: `basename ${0}` [-h] filename"
+
+if [[ $# -ge 1 ]] && [[ "$1" = "-h" ]]; then
+    echo $USAGE
+    echo
+    echo "Use Skim to extract standard Adobe annotations from a"
+    echo "PDF file that is not filed in BibDesk."
+    exit 0
+fi
+
+if [[ $# -ne 1 ]] || [[ ! -f "$1" ]]; then
+    echo $USAGE
+    exit 1
+fi
+
+export LANG=en_US.UTF-8
+
+PDF=$1
+PDFBASE=`basename "$PDF"`
+
+STEM=${PDFBASE%.pdf}
+TXT="$NOTESDIR/$STEM.txt"
+MD="$NOTESDIR/$STEM.md"
+
+$ANNOT2TXT "$PDF" "$TXT"
+$TXT2MD -d "$TXT"

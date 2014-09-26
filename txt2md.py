@@ -26,6 +26,8 @@ READER_NOTE_TYPES = ('anchor', 'text')
 QUOTE_NOTE_TYPES = ('highlight', 'underline', 'strike-through')
 NOTE_TYPES = READER_NOTE_TYPES + QUOTE_NOTE_TYPES
 
+CITE_KEY_PATTERN = re.compile('(\w+)\s\[([\w\s]+)\].txt')
+
 
 class Note(object):
 
@@ -76,17 +78,23 @@ class Article(object):
         self.note_file = note_filename
         self.pdf_file = os.path.splitext(self.note_file)[0] + '.pdf'
         self.cite_key = self._parse_cite_key()
-        self.bdsk_link = self._bdsk_link()
-        self.md_bdsk_link = self._markdown_bdsk_link()
-        self.pdf_path = self._pdf_path()
-        self.pdf_link = self._pdf_link()
-        self.md_pdf_link = self._markdown_pdf_link()
+        if self.cite_key:
+            self.bdsk_link = self._bdsk_link()
+            self.md_bdsk_link = self._markdown_bdsk_link()
+            self.pdf_path = self._pdf_path()
+            self.pdf_link = self._pdf_link()
+            self.md_pdf_link = self._markdown_pdf_link()
 
     def field(self, which):
         return bibdesk_query(which, self.cite_key)
 
     def _parse_cite_key(self):
-        return self.note_file.split()[0]
+        match = re.match(CITE_KEY_PATTERN, self.note_file)
+        if match:
+            cite_key, keyword = match.groups()
+        else:
+            cite_key = None
+        return cite_key
 
     def _bdsk_link(self):
         return u"x-bdsk://%s" % self.cite_key
@@ -143,14 +151,17 @@ def parse_notes(path):
     return notes
 
 def write_header(fileh, article, notes):
-    title = article.field('title').replace('{','').replace('}','')
-    year = article.field('year')
-    print(u'#', title, u'(%s)\n' % year, file=fileh)
-    print(u'### Authors', file=fileh)
-    print(u'*', u'\n* '.join(article.field('author').split(' and ')), file=fileh)
-    print(u'\n### Article links', file=fileh)
-    print(u'* Open in BibDesk:', article.md_bdsk_link, file=fileh)
-    print(u'* Open article:', article.md_pdf_link, file=fileh)
+    if article.cite_key:
+        title = article.field('title').replace('{','').replace('}','')
+        year = article.field('year')
+        print(u'#', title, u'(%s)\n' % year, file=fileh)
+        print(u'### Authors', file=fileh)
+        print(u'*', u'\n* '.join(article.field('author').split(' and ')), file=fileh)
+        print(u'\n### Article links', file=fileh)
+        print(u'* Open in BibDesk:', article.md_bdsk_link, file=fileh)
+        print(u'* Open article:', article.md_pdf_link, file=fileh)
+    else:
+        print(u'#', os.path.splitext(article.pdf_file)[0], file=fileh)
     print(u'\n### Annotation summary', file=fileh)
     for ntype in NOTE_TYPES:
         print(u"* %s notes:" % ntype.title(),

@@ -63,6 +63,8 @@ class Note(object):
             if test_type in typedesc:
                 note_type = test_type
                 break
+        if note_type is None:
+            note_type = typedesc.lower().replace(' note', '').strip()
         return note_type
 
     def _sanitize(self, text):

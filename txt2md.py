@@ -52,7 +52,7 @@ class Note(object):
         ell = ell2 = u''
         if self.text:
             if self.text[0].islower(): ell = u'...'
-            if self.text[-1] not in '.!?"\'': ell2 = u'...'
+            if self.text[-1] not in '.;!?"\'': ell2 = u'...'
         return ell + self.text + ell2
 
     def _get_type(self, typedesc):
